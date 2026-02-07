@@ -11,7 +11,7 @@ export type RegisterUserCommandInput = {
 }
 
 export async function registerUserCommand(input: RegisterUserCommandInput): Promise<void> {
-  const tempEmail = `tguser.${input.telegramUserId}@noreply.soundr.ru`
+  const tempEmail = `tguser.${input.telegramUserId}@noreply.example.com`
   const tempPassword = Math.random().toString(36).slice(-8)
   const userService = UserServiceFacade.getInstance()
   const user = await userService.findByEmail(tempEmail)

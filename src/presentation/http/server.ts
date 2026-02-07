@@ -13,7 +13,7 @@ function formatServerBanner(host: string, port: number): string {
     },
   })
 
-  table.push([{ colSpan: 2, content: 'Soundr API Server', hAlign: 'center' }])
+  table.push([{ colSpan: 2, content: 'Backend API Server', hAlign: 'center' }])
   table.push(
     ['Status', '✓ Running'],
     ['Port', port.toString()],

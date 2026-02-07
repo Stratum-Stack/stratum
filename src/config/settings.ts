@@ -23,11 +23,11 @@ export class Settings {
   }
 
   get mongoUri(): string {
-    return process.env.MONGODB_URI || 'mongodb://admin:password123@localhost:27017/soundr?authSource=admin'
+    return process.env.MONGODB_URI || 'mongodb://admin:password123@localhost:27017/app?authSource=admin'
   }
 
   get mongoDatabase(): string {
-    return process.env.MONGODB_DATABASE || 'soundr'
+    return process.env.MONGODB_DATABASE || 'app'
   }
 
   get port(): number {
@@ -80,7 +80,7 @@ export class Settings {
   }
 
   get s3Bucket(): string {
-    return process.env.S3_BUCKET || 'soundr-uploads'
+    return process.env.S3_BUCKET || 'app-uploads'
   }
 
   get s3AccessKeyId(): string {

@@ -62,8 +62,8 @@ export async function createApp(): Promise<FastifyInstance> {
     openapi: {
       openapi: '3.0.0',
       info: {
-        title: 'Soundr API',
-        description: 'API documentation for Soundr backend',
+        title: 'Backend API',
+        description: 'API documentation for backend application',
         version: '1.0.0',
       },
       servers: [
@@ -183,7 +183,7 @@ export async function createApp(): Promise<FastifyInstance> {
   // Root endpoint
   fastify.get('/', async () => {
     return {
-      name: 'Soundr API',
+      name: 'Backend API',
       version: '1.0.0',
       status: 'running',
       docs: '/docs',

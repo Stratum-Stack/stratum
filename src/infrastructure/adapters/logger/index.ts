@@ -1,7 +1,7 @@
 /**
  * Logger Infrastructure
  *
- * Beautiful, structured logging for the Soundr application
+ * Beautiful, structured logging for the application
  * - Development: Colorized console output with emojis
  * - Production: JSON structured logs for aggregation
  *

@@ -13,7 +13,7 @@ services:
     build:
       context: .
       dockerfile: ./docker/Dockerfile.tgbot
-    container_name: soundr-tgbot
+    container_name: app-tgbot
     restart: unless-stopped
     environment:
       # Core
@@ -43,10 +43,10 @@ services:
       # Logging
       LOG_LEVEL: ${LOG_LEVEL:-debug}
     networks:
-      - soundr-network
+      - app-network
     labels:
-      - "com.soundr.service=telegram-bot"
-      - "com.soundr.bounded-context=presentation"
+      - "com.app.service=telegram-bot"
+      - "com.app.bounded-context=presentation"
     healthcheck:
       test: ["CMD-SHELL", "ps aux | grep 'bun.*telegram/bot' | grep -v grep || exit 1"]
       interval: 30s
@@ -59,7 +59,7 @@ services:
     build:
       context: .
       dockerfile: ./docker/Dockerfile.backend
-    container_name: soundr-backend
+    container_name: app-backend
     restart: unless-stopped
     environment:
       # Application
@@ -107,10 +107,10 @@ services:
     ports:
       - "3000:3000"
     networks:
-      - soundr-network
+      - app-network
     labels:
-      - "com.soundr.service=backend-api"
-      - "com.soundr.bounded-context=presentation"
+      - "com.app.service=backend-api"
+      - "com.app.bounded-context=presentation"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health/detailed"]
       interval: 30s
@@ -123,7 +123,7 @@ services:
     build:
       context: .
       dockerfile: ./docker/Dockerfile.workers
-    container_name: soundr-workers
+    container_name: app-workers
     restart: unless-stopped
     environment:
       # Core
@@ -158,10 +158,10 @@ services:
       S3_PUBLIC_BASE_URL: ${S3_PUBLIC_BASE_URL}
       S3_BASE_PATH: ${S3_BASE_PATH:-uploads}
     networks:
-      - soundr-network
+      - app-network
     labels:
-      - "com.soundr.service=workers"
-      - "com.soundr.bounded-context=infrastructure"
+      - "com.app.service=workers"
+      - "com.app.bounded-context=infrastructure"
     depends_on:
       backend:
         condition: service_healthy
@@ -173,7 +173,7 @@ services:
       start_period: 15s
 
 networks:
-  soundr-network:
+  app-network:
     driver: bridge
     labels:
-      - "com.soundr.network=main"
+      - "com.app.network=main"
