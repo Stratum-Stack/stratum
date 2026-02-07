@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": false,
+    "baseUrl": "..",
+    "paths": {
+      "@domain/*": ["./upload/domain/*"],
+      "@application/*": ["./upload/application/*"],
+      "@infrastructure/*": ["./upload/infrastructure/*"],
+      "@presentation/*": ["./upload/presentation/*"],
+      "@shared/*": ["./shared/*"]
+    }
+  }
+}

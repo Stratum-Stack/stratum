@@ -1,0 +1,58 @@
+# Workers Dockerfile
+# Handles background jobs and event processing
+# - Redis Event Bus subscriber
+# - Telegram notifications
+# - Audio processing (audiowaveform)
+
+FROM oven/bun:1.2-debian AS base
+
+# Install audiowaveform dependencies first
+RUN rm -rf /var/lib/apt/lists/* && apt-get clean && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        ffmpeg \
+        libmad0 \
+        libid3tag0 \
+        libsndfile1 \
+        libgd3 \
+        libboost-program-options1.74.0 \
+        libboost-filesystem1.74.0 \
+        libboost-regex1.74.0 \
+        procps && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install audiowaveform
+ARG AUDIOWAVEFORM_VERSION=1.10.2
+ARG TARGETARCH
+ADD https://github.com/bbc/audiowaveform/releases/download/${AUDIOWAVEFORM_VERSION}/audiowaveform_${AUDIOWAVEFORM_VERSION}-1-12_${TARGETARCH}.deb .
+
+RUN dpkg -i ./audiowaveform_${AUDIOWAVEFORM_VERSION}-1-12_${TARGETARCH}.deb && \
+    rm audiowaveform*.deb && \
+    which audiowaveform
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json bun.lock* ./
+
+# Install dependencies
+RUN bun install --frozen-lockfile --production
+
+# Copy source code
+COPY . .
+
+# Create temp directory for processing
+RUN mkdir -p /tmp/audio-processing && \
+    chmod 777 /tmp/audio-processing
+
+# Set environment variables
+ENV NODE_ENV=production
+
+# Health check: ensure main bun process stays alive
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD ps -p 1 -o comm= | grep bun || exit 1
+
+# Run worker
+CMD ["bun", "run", "src/workers/telegram-bot.worker.ts"]

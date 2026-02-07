@@ -1,0 +1,179 @@
+version: '3.8'
+
+# Architecture: DDD Bounded Contexts
+# - Auth BC: Authentication and authorization
+# - Users BC: User management and profiles
+# - Upload BC: File storage and S3 management
+# - Settings BC: Application configuration
+# Each BC has its own infrastructure (models, repos, adapters, factories)
+
+services:
+  # Telegram Bot (Commands & User Interaction)
+  tgbot:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.tgbot
+    container_name: soundr-tgbot
+    restart: unless-stopped
+    environment:
+      # Core
+      NODE_ENV: ${NODE_ENV:-development}
+
+      # MongoDB
+      MONGODB_URI: ${MONGODB_URI}
+      MONGODB_DATABASE: ${MONGODB_DATABASE}
+
+      # Redis (Event Bus)
+      REDIS_URI: ${REDIS_URI}
+
+      # Telegram
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      API_BASE_URL: ${API_BASE_URL}
+
+      # S3 (for upload functionality)
+      S3_REGION: ${S3_REGION}
+      S3_BUCKET: ${S3_BUCKET}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY}
+      S3_ENDPOINT: ${S3_ENDPOINT}
+      S3_FORCE_PATH_STYLE: ${S3_FORCE_PATH_STYLE:-true}
+      S3_PUBLIC_BASE_URL: ${S3_PUBLIC_BASE_URL}
+      S3_BASE_PATH: ${S3_BASE_PATH:-uploads}
+
+      # Logging
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+    networks:
+      - soundr-network
+    labels:
+      - "com.soundr.service=telegram-bot"
+      - "com.soundr.bounded-context=presentation"
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep 'bun.*telegram/bot' | grep -v grep || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  # Backend API (Fastify HTTP Server)
+  backend:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.backend
+    container_name: soundr-backend
+    restart: unless-stopped
+    environment:
+      # Application
+      NODE_ENV: ${NODE_ENV:-development}
+      HOST: 0.0.0.0
+      PORT: 3000
+
+      # MongoDB
+      MONGODB_URI: ${MONGODB_URI}
+      MONGODB_DATABASE: ${MONGODB_DATABASE}
+
+      # Redis (Event Bus & Cache)
+      REDIS_URI: ${REDIS_URI}
+
+      # S3 (Upload BC)
+      S3_REGION: ${S3_REGION}
+      S3_BUCKET: ${S3_BUCKET}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY}
+      S3_ENDPOINT: ${S3_ENDPOINT}
+      S3_FORCE_PATH_STYLE: ${S3_FORCE_PATH_STYLE:-true}
+      S3_PUBLIC_BASE_URL: ${S3_PUBLIC_BASE_URL}
+      S3_BASE_PATH: ${S3_BASE_PATH:-uploads}
+
+      # JWT (Auth BC)
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+
+      # Logging
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+
+      # CORS
+      CORS_ORIGIN: ${CORS_ORIGIN}
+
+      # SMTP (Mail - removed BC)
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_FROM: ${SMTP_FROM}
+
+      # Telegram
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      API_BASE_URL: ${API_BASE_URL}
+    ports:
+      - "3000:3000"
+    networks:
+      - soundr-network
+    labels:
+      - "com.soundr.service=backend-api"
+      - "com.soundr.bounded-context=presentation"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health/detailed"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Workers (Event Handlers & Background Jobs)
+  workers:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.workers
+    container_name: soundr-workers
+    restart: unless-stopped
+    environment:
+      # Core
+      NODE_ENV: ${NODE_ENV:-development}
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+
+      # MongoDB
+      MONGODB_URI: ${MONGODB_URI}
+      MONGODB_DATABASE: ${MONGODB_DATABASE}
+
+      # Redis (Event Bus for inter-service communication)
+      REDIS_URI: ${REDIS_URI}
+
+      # Telegram (for notifications)
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      API_BASE_URL: ${API_BASE_URL}
+
+      # SMTP (for email notifications)
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_FROM: ${SMTP_FROM}
+
+      # S3 (Upload BC - for processing uploads)
+      S3_REGION: ${S3_REGION}
+      S3_BUCKET: ${S3_BUCKET}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY}
+      S3_ENDPOINT: ${S3_ENDPOINT}
+      S3_FORCE_PATH_STYLE: ${S3_FORCE_PATH_STYLE:-true}
+      S3_PUBLIC_BASE_URL: ${S3_PUBLIC_BASE_URL}
+      S3_BASE_PATH: ${S3_BASE_PATH:-uploads}
+    networks:
+      - soundr-network
+    labels:
+      - "com.soundr.service=workers"
+      - "com.soundr.bounded-context=infrastructure"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep 'bun.*telegram-bot.worker' | grep -v grep || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+networks:
+  soundr-network:
+    driver: bridge
+    labels:
+      - "com.soundr.network=main"

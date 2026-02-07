@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": false,
+    "baseUrl": "..",
+    "paths": {
+      "@domain/*": ["./auth/domain/*"],
+      "@application/*": ["./auth/application/*"],
+      "@infrastructure/*": ["./auth/infrastructure/*"],
+      "@presentation/*": ["./auth/presentation/*"],
+      "@shared/*": ["./shared/*"]
+    }
+  }
+}
