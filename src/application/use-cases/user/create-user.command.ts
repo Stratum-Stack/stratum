@@ -3,13 +3,16 @@ import { UserServiceFacade } from '@/infrastructure/facade/user-service.facade'
 import { type UserDTO } from '@/users/presentation/dto/user.dto'
 import { type AllowanceInput } from '@/users/application/ports/user-service.port'
 
-type CreateUserInput = {
+export type CreateUserInput = {
   email: string
   password: string
   allowances?: AllowanceInput[]
+  extra?: Record<string, any>
 }
 export class EmailRegisteredError extends Error {
-  constructor() {
+  constructor(
+    public existingUser: UserDTO
+  ) {
     super('Email already registered')
   }
 }
@@ -27,7 +30,7 @@ export async function createUserCommand(input: CreateUserInput): Promise<null | 
   const existingUser = await userService.findByEmail(input.email)
 
   if (existingUser) {
-    throw new EmailRegisteredError()
+    throw new EmailRegisteredError(existingUser)
   }
 
   const hashed = await authService.generatePasswordHash(input.password)
@@ -36,6 +39,7 @@ export async function createUserCommand(input: CreateUserInput): Promise<null | 
     email: input.email,
     password: hashed,
     allowances: input.allowances ?? [],
+    extra: input.extra ?? {},
   })
 
   if (!user) {

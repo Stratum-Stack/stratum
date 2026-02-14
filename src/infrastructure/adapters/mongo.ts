@@ -16,6 +16,8 @@ export class MongoConnection {
   async connect(uri: string, dbName: string): Promise<void> {
     try {
       this.db = await mongoose.connect(uri, {
+        dbName,
+
         // Connection pool settings
         maxPoolSize: 10, // Maximum number of connections in the pool
         minPoolSize: 2, // Minimum number of connections to maintain

@@ -115,6 +115,10 @@ export class Settings {
     return process.env.TELEGRAM_BOT_TOKEN || ''
   }
 
+  get telegramManagerChatId(): string | undefined {
+    return process.env.TELEGRAM_MANAGER_CHAT_ID
+  }
+
   get smtpHost(): string | undefined {
     return process.env.SMTP_HOST
   }

@@ -9,6 +9,11 @@ export type UserQuery =
   | { field: 'deletedAt', op: 'isNotNull' }
   | { field: 'licenseAcceptedAt', op: 'isNull' }
   | { field: 'licenseAcceptedAt', op: 'isNotNull' }
+  // Поиск по extra свойствам
+  | { field: 'extra', key: string, op: 'equals', value: unknown }
+  | { field: 'extra', key: string, op: 'contains', value: string }
+  | { field: 'extra', key: string, op: 'exists' }
+  | { field: 'extra', key: string, op: 'notExists' }
   // Композиция запросов
   | { and: UserQuery[] }
   | { or: UserQuery[] }
@@ -61,5 +66,21 @@ export const UserQueryBuilder = {
 
   not(query: UserQuery): UserQuery {
     return { not: query }
+  },
+
+  extraEquals(key: string, value: unknown): UserQuery {
+    return { field: 'extra', key, op: 'equals', value }
+  },
+
+  extraContains(key: string, value: string): UserQuery {
+    return { field: 'extra', key, op: 'contains', value }
+  },
+
+  extraExists(key: string): UserQuery {
+    return { field: 'extra', key, op: 'exists' }
+  },
+
+  extraNotExists(key: string): UserQuery {
+    return { field: 'extra', key, op: 'notExists' }
   }
 }

@@ -195,6 +195,35 @@ export class UserService<T extends Record<string, any> = Record<string, any>> ex
     return userDto
   }
 
+  async increaseAllowances(id: string, allowanceCodes: string[], quantities: number[]): Promise<UserDTO<T>> {
+    const user = await this.userRepo.findById<T>(id)
+    if (!user) {
+      throw new Error('User not found')
+    }
+
+    for (let i = 0; i < allowanceCodes.length; i++) {
+      const code = allowanceCodes[i]
+      const quantity = quantities[i] || 1
+      if (!code) {
+        throw new Error('Allowance code is required')
+      }
+
+      const allowance = user.getAllowance(code)
+      if (!allowance) {
+        throw new Error(`User does not have ${code} allowance`)
+      }
+      allowance.increaseQuantity(quantity)
+    }
+
+    await this.userRepo.save<T>(user)
+
+    const userDto = this.mapToDTO(user)
+    const event = new UserAllowancesChangedIntegrationEvent(userDto)
+    await this.eventBus.publish(event)
+
+    return userDto
+  }
+
   async consumeAllowances(id: string, allowanceCodes: string[], quantities: number[]): Promise<UserDTO<T>> {
     const user = await this.userRepo.findById<T>(id)
     if (!user) {

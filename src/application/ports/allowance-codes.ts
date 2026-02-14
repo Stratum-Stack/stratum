@@ -1,7 +1,7 @@
 export enum AllowanceCodes {
-  canDownloadSamples = 'canDownloadSamples',
   canManageAll = 'canManageAll',
-  canEmail = 'canEmail',
   canManageUsers = 'canManageUsers',
-  canManageSamplePacks = 'canManageSamplePacks'
+  canGenerate3DPlan = 'canGenerate3D',
+  canGenerate3DPlanPlus = 'canGenerate3D:plus',
+  canGenerate3DPlanPro = 'canGenerate3D:pro',
 }

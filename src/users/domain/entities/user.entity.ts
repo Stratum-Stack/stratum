@@ -111,7 +111,7 @@ export class User<T extends Record<string, any> = Record<string, any>> {
       throw new Error(`${code} allowance has expired`)
     }
 
-    allowance.decreaseQuantity(amount)
+    allowance.consume(amount)
   }
 
   delete(): void {

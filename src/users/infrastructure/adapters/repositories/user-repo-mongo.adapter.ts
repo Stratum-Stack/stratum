@@ -94,7 +94,11 @@ export class UserRepoMongoAdapter implements UserRepoPort {
         quantityUsed: allowance.totalQuantity - allowance.remainingQuantity
       }))
     }
-    if (userData.extra !== undefined) updateData.extra = userData.extra
+    if (userData.extra !== undefined) {
+      for (const [key, value] of Object.entries(userData.extra)) {
+        updateData[`extra.${key}`] = value
+      }
+    }
 
     const doc = await this.UserModel.findOneAndUpdate(
       { id },

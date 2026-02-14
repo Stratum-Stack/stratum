@@ -2,12 +2,12 @@ import { type AllowanceInput } from '@/users/application/ports/user-service.port
 import { AllowanceCodes } from '@/application/ports/allowance-codes'
 
 export class AllowancePreset {
-  static FREE(): AllowanceInput[] {
+  static FREE(): [AllowanceInput] {
     return [
       {
-        code: AllowanceCodes.canDownloadSamples,
-        unlimited: true,
-        quantity: 0,
+        code: AllowanceCodes.canGenerate3DPlan,
+        unlimited: false,
+        quantity: 1,
         quantityUsed: 0,
         expiresAt: null
       },

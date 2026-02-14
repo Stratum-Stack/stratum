@@ -48,4 +48,5 @@ export abstract class UserServicePort<T extends Record<string, any> = Record<str
   abstract assignAllowances(id: string, allowances: AllowanceInput[]): Promise<UserDTO<T>>
   abstract revokeAllowances(id: string, allowanceCodes: string[]): Promise<UserDTO<T>>
   abstract consumeAllowances(id: string, allowanceCodes: string[], quantities: number[]): Promise<UserDTO<T>>
+  abstract increaseAllowances(id: string, allowanceCodes: string[], quantities: number[]): Promise<UserDTO<T>>
 }
